@@ -140,6 +140,8 @@ delimiter ;
             return "menor de idade";
         elseif idade < 60 then
             return "adulto";
+        elseif idade = 0  then
+            return "usuario inexistente";
         else
             return "idoso";
         end if;
@@ -155,6 +157,7 @@ delimiter ;
         where faixa_etaria(data_nascimento) = "adulto";
 
 -- calcula a média de idade de usuário cadastrados
+-- este usa o "into" para atribuir o select na variável "media"
 delimiter $$
 create function media_idade()
 returns decimal(5,2)
@@ -165,3 +168,76 @@ begin
     
     -- cálculo da média das idades
     select avg(timestampdiff(year, data_nascimento, curdate())) into media from usuario;
+    return ifnull(media, 0);
+end; $$
+
+delimiter ;
+
+
+
+-- este usa o "set" para atribuir o select na variável "media"
+delimiter $$
+create function media_idade()
+returns decimal(5,2)
+not deterministic
+reads sql data
+begin
+    declare media decimal(5,2);
+    
+    -- cálculo da média das idades
+    set media = (select avg(timestampdiff(year, data_nascimento, curdate())) from usuario);
+    return ifnull(media, 0);
+end; $$
+
+delimiter ;
+
+-- selecionar idade específica
+select "A média de idade dos clientes é maior que 30" as resultado where media_idade() > 30;
+
+
+-- Exercício direcionado
+-- cálculo do total gasto por um usuário
+delimiter $$
+
+create function calcula_total_gasto(pid_usuario int)
+returns decimal(10,2) 
+not deterministic 
+reads sql data
+begin
+    declare total decimal(10,2);
+
+    select sum(i.preco * ic.quantidade) into total
+    from compra c
+    join ingresso_compra ic on c.id_compra = ic.fk_id_compra
+    join ingresso i on i.id_ingresso = ic.fk_id_ingresso
+    where c.fk_id_usuario = pid_usuario;
+
+    return ifnull(total, 0);
+end; $$
+
+-- chamada da função calcula_total_gasto
+select calcula_total_gasto(1) as total_gasto;
+
+
+-- buscar a faixa etária de usuário
+delimiter $$
+create function buscar_faixa_etaria_usuario(pid int)
+returns varchar(20)
+not deterministic
+reads sql data
+begin
+    declare nascimento date;
+    declare faixa varchar(20);
+
+    select data_nascimento into nascimento
+    from usuario
+    where id_usuario = pid;
+
+    set faixa = faixa_etaria(nascimento);
+
+    return faixa;
+end; $$
+delimiter ;
+
+select buscar_faixa_etaria_usuario(1);
+
