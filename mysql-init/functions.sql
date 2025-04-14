@@ -97,3 +97,71 @@ begin
     return msg;
 end $$
 delimiter ;
+
+-- ver somente as funções
+select routine_name from information_schema.routines
+   where routine_type = 'FUNCTION'
+      and routine_schema = 'vio_rhuan'
+
+-- mostra procedures e functions
+select routine_type, routine_name from information_schema.routines 
+   where routine_schema = 'vio_rhuan';
+
+
+-- usar procedures ao invés de functions quando for alterar conteúdo de tabelas
+-- maioridade
+delimiter $$
+
+create function is_maior_idade(data_nascimento date)
+returns boolean
+not deterministic
+contains sql
+begin
+   declare idade int;
+   -- utilizando a função já criada
+   set idade = calcula_idade(data_nascimento);
+   return idade >= 18;
+end; $$ 
+
+delimiter ;
+
+    -- categorizar usuários por faixa etária
+    delimiter $$
+    create function faixa_etaria(data_nascimento date)
+    returns varchar(20)
+    not deterministic
+    contains sql
+    begin
+        declare idade int;
+        -- cálculo da idade com a função já criada
+        set idade = calcula_idade(data_nascimento);
+
+        if idade < 18 then
+            return "menor de idade";
+        elseif idade < 60 then
+            return "adulto";
+        else
+            return "idoso";
+        end if;
+    end; $$
+
+    delimiter ;
+
+    -- agrupar clientes por faixa etária
+    select faixa_etaria(data_nascimento) as Faixa, count(*) as quantidade from usuario group by Faixa;
+
+-- identificar uma faixa etária específica
+    select name from usuario
+        where faixa_etaria(data_nascimento) = "adulto";
+
+-- calcula a média de idade de usuário cadastrados
+delimiter $$
+create function media_idade()
+returns decimal(5,2)
+not deterministic
+reads sql data
+begin
+    declare media decimal(5,2);
+    
+    -- cálculo da média das idades
+    select avg(timestampdiff(year, data_nascimento, curdate())) into media from usuario;
