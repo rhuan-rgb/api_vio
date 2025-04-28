@@ -1,6 +1,7 @@
 const connect = require("../db/connect");
 const validateUser = require("../services/validateUser");
 const validateCpf = require("../services/validateCpf");
+const jwt = require("jsonwebtoken");
 
 module.exports = class userController {
   static async createUser(req, res) {
@@ -157,7 +158,19 @@ module.exports = class userController {
           return res.status(401).json({ error: "Senha incorreta" });
         }
 
-        return res.status(200).json({ message: "Login bem-sucedido", user });
+        const token = jwt.sign({ id: user.id_usuario }, process.env.SECRET, {
+          expiresIn: "1h",
+        });
+
+        //remove um atributo de um objeto
+        delete user.password
+
+        return res.status(200).json({
+          message: "Login bem-sucedido",
+          user,
+          token
+        })
+
       });
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);

@@ -1,6 +1,10 @@
+//este arquivo (index.js) serve como um inicializador, ou seja, 
+
 const express = require("express"); //Importa o módulo Express
 
 const cors = require("cors");
+require("dotenv-safe").config();
+const jwt = require("jsonwebtoken");
 
 const testConnect = require("./db/testConnect")
 
