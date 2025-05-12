@@ -7,6 +7,20 @@ create procedure registrar_compra(
 )
 begin
     declare v_id_compra int;
+    declare v_data_evento datetime
+
+    -- obtem a data do evento
+    select e.data_hora into v_data_evento
+    from ingresso i
+    join evento e on i.fk_id_evento = e.id_evento
+    where i.id_ingresso = p_id_ingresso;
+
+    -- verificar se a data do evento é menor que a atual
+    if date(v_data_evento) < curdate() then
+      signal sql state '45000'
+      set message_text = 'ERRO_PROCEDURE - Não é possível comprar ingressos para eventos passados.';
+    end if;
+
 
     insert into compra (data_compra, fk_id_usuario) 
     values (now(), p_id_usuario);
