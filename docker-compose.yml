@@ -22,7 +22,7 @@ services:
     # Configura o container para reiniciar automaticamente caso ele pare.
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: senai@604
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: vio_rhuan
     #Mapeia a porta 3306 do container para a porta 3306 da máquina virtual
     ports:
