@@ -57,6 +57,7 @@ CREATE TABLE `evento` (
   `descricao` varchar(255) NOT NULL,
   `data_hora` datetime NOT NULL,
   `local` varchar(255) NOT NULL,
+  
   `fk_id_organizador` int NOT NULL,
   PRIMARY KEY (`id_evento`),
   KEY `fk_id_organizador` (`fk_id_organizador`),
